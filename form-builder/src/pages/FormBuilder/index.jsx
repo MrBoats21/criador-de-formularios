@@ -13,6 +13,7 @@ export default function FormBuilder() {
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [loading, setLoading] = useState(false);
   const { saveForm, currentForm, forms } = useForm();
   const { companies, getCompany } = useCompany();
 
@@ -54,7 +55,18 @@ export default function FormBuilder() {
       return;
     }
 
+    if (!formTitle.trim()) {
+      setToast({ message: 'Digite um título para o formulário', type: 'error' });
+      return;
+    }
+
+    if (fields.length === 0) {
+      setToast({ message: 'Adicione pelo menos um campo ao formulário', type: 'error' });
+      return;
+    }
+
     try {
+      setLoading(true);
       await saveForm({
         title: formTitle,
         fields,
@@ -62,9 +74,11 @@ export default function FormBuilder() {
         updatedAt: new Date().toISOString()
       });
       setToast({ message: 'Formulário salvo com sucesso', type: 'success' });
-    // eslint-disable-next-line no-unused-vars
     } catch (error) {
+      console.error('Erro ao salvar formulário:', error);
       setToast({ message: 'Erro ao salvar formulário', type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,9 +95,12 @@ export default function FormBuilder() {
           />
           <button
             onClick={handleSave}
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors ml-4"
+            disabled={loading}
+            className={`bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors ml-4 ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
-            Salvar
+            {loading ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
         

@@ -4,9 +4,19 @@ import { useCompany } from '../../contexts/CompanyContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export default function Dashboard() {
-  const { forms } = useForm();
-  const { companies } = useCompany();
+  const { forms, loading: formsLoading } = useForm();
+  const { companies, loading: companiesLoading } = useCompany();
   const [dateFilter, setDateFilter] = useState('all');
+
+  if (formsLoading || companiesLoading) {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="flex justify-center items-center h-32">
+          <p className="text-gray-500">Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   const filterByDate = (data) => {
     const now = new Date();
@@ -26,17 +36,17 @@ export default function Dashboard() {
     }
   };
 
-  const filteredForms = filterByDate(forms);
+  const filteredForms = filterByDate(forms || []);
   const totalForms = filteredForms.length;
   
-  const formsByCompany = companies.map(company => ({
+  const formsByCompany = (companies || []).map(company => ({
     name: company.name,
     count: filteredForms.filter(form => form.companyId === company.id).length
   }));
 
   const submissionStatuses = {
-    completed: filteredForms.filter(form => form.submissions?.some(s => s.status === 'completed')).length,
-    pending: filteredForms.filter(form => form.submissions?.some(s => s.status === 'pending')).length
+    completed: filteredForms.filter(form => form.submissions?.some(s => s.status === 'completed')).length || 0,
+    pending: filteredForms.filter(form => form.submissions?.some(s => s.status === 'pending')).length || 0
   };
 
   const submissionData = [
