@@ -1,36 +1,113 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import api from '../utils/api';
 
-const FormContext = createContext({});
+const FormContext = createContext(null);
 
 function FormProvider({ children }) {
   const [forms, setForms] = useState([]);
   const [currentForm, setCurrentForm] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const savedForms = localStorage.getItem('forms');
-    if (savedForms) {
-      setForms(JSON.parse(savedForms));
-    }
+    getForms();
   }, []);
 
-  const saveForm = (formData) => {
-    const newForms = currentForm
-      ? forms.map(f => f.id === currentForm ? { ...formData, id: currentForm } : f)
-      : [...forms, { ...formData, id: Date.now() }];
-    
-    setForms(newForms);
-    localStorage.setItem('forms', JSON.stringify(newForms));
+  const getForms = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('/forms');
+      setForms(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao carregar formulários');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const deleteForm = (formId) => {
-    const newForms = forms.filter(f => f.id !== formId);
-    setForms(newForms);
-    localStorage.setItem('forms', JSON.stringify(newForms));
+  const getForm = async (id) => {
+    try {
+      setIsLoading(true);
+      const response = await api.get(`/forms/${id}`);
+      return response.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.message || 'Erro ao carregar formulário');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createForm = async (formData) => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/forms', formData);
+      setForms([...forms, response.data]);
+      return response.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.message || 'Erro ao criar formulário');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateForm = async (id, formData) => {
+    try {
+      setIsLoading(true);
+      const response = await api.put(`/forms/${id}`, formData);
+      setForms(forms.map(form => 
+        form.id === id ? response.data : form
+      ));
+      return response.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.message || 'Erro ao atualizar formulário');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteForm = async (id) => {
+    try {
+      setIsLoading(true);
+      await api.delete(`/forms/${id}`);
+      setForms(forms.filter(form => form.id !== id));
+    } catch (err) {
+      throw new Error(err.response?.data?.message || 'Erro ao deletar formulário');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitFormResponse = async (formId, answers) => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/submissions', {
+        formId,
+        answers,
+        userId: localStorage.getItem('userId')
+      });
+      return response.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.message || 'Erro ao enviar respostas');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <FormContext.Provider value={{ forms, currentForm, setCurrentForm, saveForm, deleteForm }}>
+    <FormContext.Provider value={{ 
+      forms,
+      currentForm,
+      setCurrentForm,
+      isLoading,
+      error,
+      getForms,
+      getForm,
+      createForm,
+      updateForm,
+      deleteForm,
+      submitFormResponse
+    }}>
       {children}
     </FormContext.Provider>
   );

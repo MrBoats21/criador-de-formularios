@@ -32,7 +32,7 @@ export default function Companies() {
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Empresas</h1>
         <Link 
-          to="/admin/companies/create"
+          to="/companies/create"
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
         >
           Nova Empresa

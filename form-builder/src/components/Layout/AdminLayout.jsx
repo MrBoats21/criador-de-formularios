@@ -20,7 +20,7 @@ export function AdminLayout() {
             Dashboard
           </Link>
           <Link 
-            to="/admin/companies" 
+            to="/companies" 
             className={`block py-2.5 px-4 rounded transition-colors ${isActive('/admin/companies')}`}
           >
             Empresas

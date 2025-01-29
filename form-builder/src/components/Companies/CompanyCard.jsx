@@ -36,7 +36,7 @@ export function CompanyCard({ company, onDelete }) {
 
       <div className="flex gap-2">
         <Link
-          to={`/admin/companies/${company.id}/edit`}
+          to={`admin/companies/${company.id}/edit`}
             className="text-blue-500 hover:text-blue-700"
           >
            Editar  

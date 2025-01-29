@@ -11,22 +11,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
-      const user = await signIn(credentials);
-      
-      // Redireciona baseado no papel do usuário
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/forms');
-      }
+      await signIn(credentials);
+      navigate('/dashboard');
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setToast({ 
-        message: 'Erro ao fazer login. Verifique suas credenciais.', 
-        type: 'error' 
-      });
+      setToast({ message: 'Credenciais inválidas', type: 'error' });
     }
   };
 

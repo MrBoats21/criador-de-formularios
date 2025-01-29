@@ -1,46 +1,50 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import api from '../utils/api';
 
 const AuthContext = createContext(null);
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Se existir token, considerar usuário como autenticado
+      setUser({ token });
+    }
+    setLoading(false);
+  }, []);
 
   const signIn = async (credentials) => {
     try {
-      // Simulação de autenticação
-      const userData = {
-        id: 1,
-        email: credentials.email,
-        role: credentials.email.includes('admin') ? 'admin' : 'user',
-        name: 'Usuário Teste'
-      };
-
+      const response = await api.post('/auth/login', credentials);
+      const { token, user: userData } = response.data;
+      localStorage.setItem('token', token);
       setUser(userData);
-      localStorage.setItem('formBuilder:user', JSON.stringify(userData));
-      
       return userData;
-    // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      throw new Error('Erro na autenticação');
+      throw new Error(error.response?.data?.message || 'Erro ao fazer login');
     }
   };
 
   const signOut = () => {
+    localStorage.removeItem('token');
     setUser(null);
-    localStorage.removeItem('formBuilder:user');
   };
 
+  if (loading) {
+    return null; // ou um componente de loading
+  }
+
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        signIn, 
-        signOut, 
-        signed: !!user,
-        isAdmin: user?.role === 'admin'
-      }}
-    >
+    <AuthContext.Provider value={{ 
+      user,
+      signIn,
+      signOut,
+      signed: !!user
+    }}>
       {children}
     </AuthContext.Provider>
   );

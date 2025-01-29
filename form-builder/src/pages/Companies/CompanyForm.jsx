@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { validateCompany } from '../../utils/companyValidation';
 import { Toast } from '../../components/Toast';
-import { UserSection } from '../../components/Companies/UserSection';
+import { compressImage } from '../../utils/imageCompression';
 
 export function CompanyForm({ initialData, onSubmit }) {
   const [formData, setFormData] = useState({
@@ -10,44 +10,40 @@ export function CompanyForm({ initialData, onSubmit }) {
     backgroundColor: initialData?.backgroundColor || '#ffffff',
     primaryColor: initialData?.primaryColor || '#3b82f6',
     secondaryColor: initialData?.secondaryColor || '#1d4ed8',
-    logoFile: null,
-    users: initialData?.users || [],
+    logoUrl: initialData?.logoUrl || null
   });
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState(null);
   const [logoPreview, setLogoPreview] = useState(initialData?.logoUrl || null);
 
-  const handleAddUser = (user) => {
-    setFormData({
-      ...formData,
-      users: [...formData.users, user],
-    });
-  };
-
-  const handleRemoveUser = (index) => {
-    setFormData({
-      ...formData,
-      users: formData.users.filter((_, i) => i !== index),
-    });
+  const handleLogoChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const compressedImage = await compressImage(file);
+        setFormData({ 
+          ...formData, 
+          logoUrl: compressedImage
+        });
+        setLogoPreview(compressedImage);
+      } catch (error) {
+        console.error('Erro ao processar imagem:', error);
+        setErrors({ ...errors, logoFile: 'Erro ao processar imagem' });
+      }
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const validation = validateCompany(formData);
-
+    
     if (!validation.isValid) {
       setErrors(validation.errors);
       setToast({ message: 'Corrija os erros antes de salvar', type: 'error' });
       return;
     }
 
-    // Garante que 'users' será sempre um array ao enviar os dados
-    const sanitizedData = { 
-      ...formData, 
-      users: Array.isArray(formData.users) ? formData.users : [] 
-    };
-
-    onSubmit(sanitizedData);
+    onSubmit(formData);
   };
 
   return (
@@ -162,33 +158,21 @@ export function CompanyForm({ initialData, onSubmit }) {
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              setFormData({ ...formData, logoFile: file });
-              setErrors({ ...errors, logoFile: null });
-
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                setLogoPreview(reader.result);
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
+          onChange={handleLogoChange}
           className={`w-full p-2 border rounded-lg ${
             errors.logoFile ? 'border-red-500' : 'border-gray-300'
           }`}
         />
         {errors.logoFile && <span className="text-red-500 text-sm">{errors.logoFile}</span>}
-
+        
         {logoPreview && (
           <div className="mt-4">
             <label className="block text-sm font-medium mb-2">Preview</label>
-            <div
+            <div 
               className="w-full h-32 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: formData.backgroundColor }}
             >
-              <img
+              <img 
                 src={logoPreview}
                 alt="Logo preview"
                 className="max-h-24 max-w-full object-contain"
@@ -196,13 +180,6 @@ export function CompanyForm({ initialData, onSubmit }) {
             </div>
           </div>
         )}
-      </div>
-
-      <div className="mt-6 border-t pt-6">
-        <UserSection
-          onAddUser={handleAddUser}
-          onRemoveUser={handleRemoveUser}
-        />
       </div>
 
       <div className="flex justify-end gap-2">
@@ -231,10 +208,9 @@ CompanyForm.propTypes = {
     backgroundColor: PropTypes.string,
     primaryColor: PropTypes.string,
     secondaryColor: PropTypes.string,
-    logoUrl: PropTypes.string,
-    users: PropTypes.array,
+    logoUrl: PropTypes.string
   }),
-  onSubmit: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired
 };
 
 export default CompanyForm;

@@ -13,6 +13,7 @@
     "@heroicons/react": "^2.2.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
+    "bcryptjs": "^2.4.3",
     "mysql2": "^3.11.5",
     "postcss": "^8.4.49",
     "prop-types": "^15.8.1",

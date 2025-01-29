@@ -19,7 +19,7 @@ export default function CreateCompany() {
       
       // Aguarda o toast ser exibido antes de navegar
       setTimeout(() => {
-        navigate('/admin/companies');
+        navigate('/companies');
       }, 1000);
     // eslint-disable-next-line no-unused-vars
     } catch (error) {

@@ -13,22 +13,31 @@ export default function FormBuilder() {
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { saveForm, currentForm, forms } = useForm();
+  const [isLoading, setIsLoading] = useState(false);
   const { companies, getCompany } = useCompany();
+  const { createForm, updateForm, getForm } = useForm();
+
 
   const selectedCompany = selectedCompanyId ? getCompany(Number(selectedCompanyId)) : null;
 
   useEffect(() => {
-    if (currentForm) {
-      const form = forms.find(f => f.id === currentForm);
-      if (form) {
-        setFormTitle(form.title);
-        setFields(form.fields);
-        setSelectedCompanyId(form.companyId);
+    const loadForm = async () => {
+      const formId = new URLSearchParams(window.location.search).get('id');
+      if (formId) {
+        try {
+          const form = await getForm(formId);
+          setFormTitle(form.title);
+          setFields(form.fields);
+          setSelectedCompanyId(form.companyId);
+        // eslint-disable-next-line no-unused-vars
+        } catch (error) {
+          setToast({ message: 'Erro ao carregar formulário', type: 'error' });
+        }
       }
-    }
-  }, [currentForm, forms]);
+    };
+
+    loadForm();
+  }, [getForm]);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -55,30 +64,38 @@ export default function FormBuilder() {
       return;
     }
 
-    if (!formTitle.trim()) {
-      setToast({ message: 'Digite um título para o formulário', type: 'error' });
-      return;
-    }
-
-    if (fields.length === 0) {
-      setToast({ message: 'Adicione pelo menos um campo ao formulário', type: 'error' });
-      return;
-    }
-
     try {
-      setLoading(true);
-      await saveForm({
+      setIsLoading(true);
+      const formData = {
         title: formTitle,
-        fields,
         companyId: Number(selectedCompanyId),
-        updatedAt: new Date().toISOString()
-      });
+        fields: fields,
+        theme: selectedCompany ? {
+          backgroundColor: selectedCompany.backgroundColor,
+          primaryColor: selectedCompany.primaryColor,
+          secondaryColor: selectedCompany.secondaryColor,
+          logoUrl: selectedCompany.logoUrl,
+          fontFamily: 'Arial',
+          fontSize: 'base'
+        } : null
+      };
+
+      const formId = new URLSearchParams(window.location.search).get('id');
+      
+      if (formId) {
+        await updateForm(formId, formData);
+      } else {
+        await createForm(formData);
+      }
+
       setToast({ message: 'Formulário salvo com sucesso', type: 'success' });
     } catch (error) {
-      console.error('Erro ao salvar formulário:', error);
-      setToast({ message: 'Erro ao salvar formulário', type: 'error' });
+      setToast({ 
+        message: error.message || 'Erro ao salvar formulário', 
+        type: 'error' 
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -95,12 +112,12 @@ export default function FormBuilder() {
           />
           <button
             onClick={handleSave}
-            disabled={loading}
-            className={`bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors ml-4 ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            disabled={isLoading}
+            className={`${
+              isLoading ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'
+            } text-white px-6 py-2 rounded-lg transition-colors ml-4`}
           >
-            {loading ? 'Salvando...' : 'Salvar'}
+            {isLoading ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
         
@@ -198,16 +215,10 @@ export default function FormBuilder() {
                 backgroundColor: selectedCompany.backgroundColor,
                 primaryColor: selectedCompany.primaryColor,
                 secondaryColor: selectedCompany.secondaryColor,
-                fontFamily: 'Arial',
-                fontSize: 'base',
-                logoUrl: selectedCompany.logoUrl
-              } : {
-                backgroundColor: '#ffffff',
-                primaryColor: '#3b82f6',
-                secondaryColor: '#1d4ed8',
+                logoUrl: selectedCompany.logoUrl,
                 fontFamily: 'Arial',
                 fontSize: 'base'
-              }}
+              } : null}
             />
           </div>
         </div>
