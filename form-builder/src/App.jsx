@@ -31,6 +31,7 @@ function App() {
         >
           <Route path="forms" element={<FormList />} />
           <Route path="form-builder" element={<FormBuilder />} />
+          <Route path="form-builder/:id" element={<FormBuilder />} />
           <Route path="companies" element={<Companies />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="companies/create" element={<CreateCompany />} />

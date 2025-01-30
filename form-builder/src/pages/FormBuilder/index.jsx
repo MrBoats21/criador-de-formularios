@@ -1,5 +1,6 @@
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FormPreview } from '../../components/FormBuilder/Preview';
 import { FieldTypeModal } from '../../components/FormBuilder/FieldTypeModal';
 import { Toast } from '../../components/Toast';
@@ -8,6 +9,8 @@ import { useForm } from '../../contexts/FormContext';
 import { useCompany } from '../../contexts/CompanyContext';
 
 export default function FormBuilder() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [formTitle, setFormTitle] = useState('');
   const [fields, setFields] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -17,27 +20,29 @@ export default function FormBuilder() {
   const { companies, getCompany } = useCompany();
   const { createForm, updateForm, getForm } = useForm();
 
-
   const selectedCompany = selectedCompanyId ? getCompany(Number(selectedCompanyId)) : null;
 
   useEffect(() => {
-    const loadForm = async () => {
-      const formId = new URLSearchParams(window.location.search).get('id');
-      if (formId) {
-        try {
-          const form = await getForm(formId);
-          setFormTitle(form.title);
-          setFields(form.fields);
-          setSelectedCompanyId(form.companyId);
-        // eslint-disable-next-line no-unused-vars
-        } catch (error) {
-          setToast({ message: 'Erro ao carregar formulário', type: 'error' });
-        }
-      }
-    };
+    if (id) {
+      loadForm();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-    loadForm();
-  }, [getForm]);
+  const loadForm = async () => {
+    try {
+      setIsLoading(true);
+      const form = await getForm(id);
+      setFormTitle(form.title);
+      setFields(form.fields);
+      setSelectedCompanyId(form.companyId.toString());
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setToast({ message: 'Erro ao carregar formulário', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -80,15 +85,16 @@ export default function FormBuilder() {
         } : null
       };
 
-      const formId = new URLSearchParams(window.location.search).get('id');
-      
-      if (formId) {
-        await updateForm(formId, formData);
+      if (id) {
+        await updateForm(id, formData);
       } else {
         await createForm(formData);
       }
 
       setToast({ message: 'Formulário salvo com sucesso', type: 'success' });
+      setTimeout(() => {
+        navigate('/forms');
+      }, 2000);
     } catch (error) {
       setToast({ 
         message: error.message || 'Erro ao salvar formulário', 

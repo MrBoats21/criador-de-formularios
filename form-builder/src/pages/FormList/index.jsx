@@ -1,48 +1,51 @@
-import { useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from '../../contexts/FormContext';
-import { useNavigate } from 'react-router-dom';
 import { Toast } from '../../components/Toast';
 
 export default function FormList() {
-  const { forms, loading, error, setCurrentForm, deleteForm, refreshForms } = useForm();
+  const { forms, getForms, deleteForm } = useForm();
   const [toast, setToast] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const handleEdit = (formId) => {
-    setCurrentForm(formId);
-    navigate('/form-builder');
-  };
+  useEffect(() => {
+    loadForms();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleDelete = async (formId) => {
-    if (!window.confirm('Tem certeza que deseja excluir este formulário?')) {
-      return;
-    }
-
+  const loadForms = async () => {
     try {
-      await deleteForm(formId);
-      setToast({ message: 'Formulário excluído com sucesso', type: 'success' });
-      refreshForms();
-    // eslint-disable-next-line no-unused-vars
+      await getForms();
     } catch (error) {
-      setToast({ message: 'Erro ao excluir formulário', type: 'error' });
+      setToast({ message: 'Erro ao carregar formulários', type: 'error' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="flex justify-center items-center h-32">
-          <p className="text-gray-500">Carregando formulários...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleDelete = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir este formulário?')) {
+      try {
+        await deleteForm(id);
+        loadForms(); // Recarrega a lista após deletar
+        setToast({ message: 'Formulário excluído com sucesso', type: 'success' });
+      } catch (error) {
+        setToast({ message: 'Erro ao excluir formulário', type: 'error' });
+      }
+    }
+  };
 
-  if (error) {
+  const handleEdit = (formId) => {
+    navigate(`/form-builder/${formId}`);
+  };
+
+  if (isLoading) {
     return (
       <div className="max-w-6xl mx-auto p-6">
-        <div className="bg-red-50 text-red-500 p-4 rounded-lg">
-          {error}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <p>Carregando...</p>
         </div>
       </div>
     );
@@ -52,52 +55,51 @@ export default function FormList() {
     <div className="max-w-6xl mx-auto p-6 bg-gray-50">
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Meus Formulários</h1>
-        <button
-          onClick={() => {
-            setCurrentForm(null);
-            navigate('/form-builder');
-          }}
+        <Link 
+          to="/form-builder"
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
         >
           Novo Formulário
-        </button>
+        </Link>
       </div>
 
-      {forms.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
-          Nenhum formulário criado ainda
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {forms.map(form => (
-            <div 
-              key={form.id} 
-              className="bg-white rounded-xl shadow-sm p-6 flex justify-between items-center hover:shadow-md transition-shadow"
-            >
+      <div className="grid gap-4">
+        {forms.map(form => (
+          <div 
+            key={form.id} 
+            className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+          >
+            <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-semibold">{form.title || 'Sem título'}</h2>
-                <p className="text-sm text-gray-500">
-                  Atualizado em: {new Date(form.updatedAt).toLocaleDateString()}
+                <p className="text-sm text-gray-500 mt-1">
+                  Criado em: {new Date(form.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              <div className="space-x-4">
+              <div className="flex gap-2">
                 <button
                   onClick={() => handleEdit(form.id)}
-                  className="text-blue-500 hover:text-blue-700 transition-colors"
+                  className="text-blue-500 hover:text-blue-700"
                 >
                   Editar
                 </button>
                 <button
                   onClick={() => handleDelete(form.id)}
-                  className="text-red-500 hover:text-red-700 transition-colors"
+                  className="text-red-500 hover:text-red-700"
                 >
                   Excluir
                 </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+
+        {forms.length === 0 && (
+          <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
+            Nenhum formulário encontrado
+          </div>
+        )}
+      </div>
 
       {toast && (
         <Toast

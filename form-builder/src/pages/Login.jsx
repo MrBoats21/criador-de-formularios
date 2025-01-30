@@ -12,8 +12,13 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await signIn(credentials);
-      navigate('/dashboard');
+      const user = await signIn(credentials);
+      // Redirecionar baseado no role
+      if (user.role === 'admin') {
+        navigate('/dashboard');
+      } else {
+        navigate('/my-forms'); // Ou qualquer outra rota para usuários comuns
+      }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setToast({ message: 'Credenciais inválidas', type: 'error' });

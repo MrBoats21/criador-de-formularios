@@ -78,22 +78,6 @@ function FormProvider({ children }) {
     }
   };
 
-  const submitFormResponse = async (formId, answers) => {
-    try {
-      setIsLoading(true);
-      const response = await api.post('/submissions', {
-        formId,
-        answers,
-        userId: localStorage.getItem('userId')
-      });
-      return response.data;
-    } catch (err) {
-      throw new Error(err.response?.data?.message || 'Erro ao enviar respostas');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <FormContext.Provider value={{ 
       forms,
@@ -105,13 +89,16 @@ function FormProvider({ children }) {
       getForm,
       createForm,
       updateForm,
-      deleteForm,
-      submitFormResponse
+      deleteForm
     }}>
       {children}
     </FormContext.Provider>
   );
 }
+
+FormProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};
 
 function useForm() {
   const context = useContext(FormContext);
@@ -120,10 +107,6 @@ function useForm() {
   }
   return context;
 }
-
-FormProvider.propTypes = {
-  children: PropTypes.node.isRequired
-};
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { FormProvider, useForm };
