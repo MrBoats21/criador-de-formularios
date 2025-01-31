@@ -1,68 +1,68 @@
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from '../../contexts/FormContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { Toast } from '../../components/Toast';
 
 export default function UserForms() {
-  const { forms } = useForm();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const [forms, setForms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+  const { getForms } = useForm();
 
-  // Temporariamente mostraremos todos os formulários
-  // Depois filtraremos baseado na empresa do usuário
-  const availableForms = forms;
+  useEffect(() => {
+    loadForms();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleStartForm = (formId) => {
-    navigate(`/forms/${formId}`);
+  const loadForms = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getForms();
+      setForms(response || []); // Garante que será sempre um array
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setToast({ message: 'Erro ao carregar formulários', type: 'error' });
+      setForms([]); // Em caso de erro, inicializa como array vazio
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  if (isLoading) {
+    return <div className="p-6">Carregando...</div>;
+  }
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Formulários Disponíveis</h1>
-
-      <div className="space-y-4">
-        {availableForms.map(form => (
-          <div 
-            key={form.id} 
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-semibold">{form.title}</h2>
-                {form.company && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {form.company.name}
-                  </p>
-                )}
-              </div>
-
-              <button
-                onClick={() => handleStartForm(form.id)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors"
+      
+      {forms.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+          Nenhum formulário disponível no momento.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {forms.map(form => (
+            <div key={form.id} className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-2">{form.title}</h2>
+              <Link
+                to={`/user/form/${form.id}/fill`}
+                className="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
               >
                 Preencher
-              </button>
+              </Link>
             </div>
-
-            {/* Status do formulário */}
-            <div className="mt-4 flex items-center gap-4 text-sm">
-              <span className="text-gray-500">
-                Criado em: {new Date(form.updatedAt).toLocaleDateString()}
-              </span>
-              {form.submissions?.find(s => s.userId === user.id) && (
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
-                  Respondido
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {availableForms.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            Nenhum formulário disponível no momento.
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+      
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

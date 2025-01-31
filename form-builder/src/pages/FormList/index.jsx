@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from '../../contexts/FormContext';
 import { Toast } from '../../components/Toast';
 
 export default function FormList() {
-  const { forms, getForms, deleteForm } = useForm();
-  const [toast, setToast] = useState(null);
+  const [forms, setForms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const [toast, setToast] = useState(null);
+  const { getForms, deleteForm } = useForm();
 
   useEffect(() => {
     loadForms();
@@ -17,7 +17,9 @@ export default function FormList() {
 
   const loadForms = async () => {
     try {
-      await getForms();
+      const response = await getForms();
+      console.log('Dados recebidos:', response); // Verifique a estrutura dos dados
+      setForms(Array.isArray(response) ? response : []); // Garante que `forms` seja um array
     } catch (error) {
       setToast({ message: 'Erro ao carregar formulários', type: 'error' });
     } finally {
@@ -26,34 +28,22 @@ export default function FormList() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este formulário?')) {
-      try {
-        await deleteForm(id);
-        loadForms(); // Recarrega a lista após deletar
-        setToast({ message: 'Formulário excluído com sucesso', type: 'success' });
-      } catch (error) {
-        setToast({ message: 'Erro ao excluir formulário', type: 'error' });
-      }
+    if (!window.confirm('Deseja realmente excluir este formulário?')) return;
+    
+    try {
+      await deleteForm(id);
+      setToast({ message: 'Formulário excluído com sucesso', type: 'success' });
+      loadForms();
+    } catch (error) {
+      setToast({ message: 'Erro ao excluir formulário', type: 'error' });
     }
   };
 
-  const handleEdit = (formId) => {
-    navigate(`/form-builder/${formId}`);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <p>Carregando...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="p-6">Carregando...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-gray-50">
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6 flex justify-between items-center">
+    <div className="max-w-6xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Meus Formulários</h1>
         <Link 
           to="/form-builder"
@@ -63,26 +53,25 @@ export default function FormList() {
         </Link>
       </div>
 
-      <div className="grid gap-4">
-        {forms.map(form => (
-          <div 
-            key={form.id} 
-            className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-semibold">{form.title || 'Sem título'}</h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Criado em: {new Date(form.createdAt).toLocaleDateString()}
-                </p>
-              </div>
+      {forms.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+          Nenhum formulário criado ainda.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {forms.map(form => (
+            <div key={form.id} className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-2">{form.title}</h2>
+              <p className="text-gray-500 text-sm mb-4">
+                Atualizado em: {new Date(form.updatedAt).toLocaleDateString()}
+              </p>
               <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(form.id)}
+                <Link
+                  to={`/form-builder/${form.id}`}
                   className="text-blue-500 hover:text-blue-700"
                 >
                   Editar
-                </button>
+                </Link>
                 <button
                   onClick={() => handleDelete(form.id)}
                   className="text-red-500 hover:text-red-700"
@@ -91,15 +80,9 @@ export default function FormList() {
                 </button>
               </div>
             </div>
-          </div>
-        ))}
-
-        {forms.length === 0 && (
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
-            Nenhum formulário encontrado
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {toast && (
         <Toast

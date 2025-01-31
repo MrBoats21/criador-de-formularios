@@ -32,8 +32,8 @@ export function AdminLayout() {
             Meus Formulários
           </Link>
           <Link 
-            to="/admin/form-builder" 
-            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/admin/form-builder')}`}
+            to="/form-builder" 
+            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/form-builder')}`}
           >
             Criar Formulário
           </Link>

@@ -14,14 +14,14 @@ export function UserLayout() {
       <aside className="bg-gray-800 w-64 min-h-screen">
         <nav className="mt-10 px-6 space-y-1">
           <Link 
-            to="/forms" 
-            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/forms')}`}
+            to="my-forms" // Caminho relativo (não precisa de /user)
+            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/user/my-forms')}`}
           >
             Formulários Disponíveis
           </Link>
           <Link 
-            to="/submissions" 
-            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/submissions')}`}
+            to="submissions" // Caminho relativo (não precisa de /user)
+            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/user/submissions')}`}
           >
             Minhas Respostas
           </Link>
@@ -29,7 +29,7 @@ export function UserLayout() {
       </aside>
 
       <main className="flex-1 overflow-y-auto pt-10 bg-gray-50">
-        <Outlet />
+        <Outlet /> {/* Renderiza as rotas aninhadas */}
       </main>
     </div>
   );

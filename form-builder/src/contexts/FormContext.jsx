@@ -19,8 +19,10 @@ function FormProvider({ children }) {
       setIsLoading(true);
       const response = await api.get('/forms');
       setForms(response.data);
+      return response.data; // Adicione esta linha para retornar os dados
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao carregar formulários');
+      return []; // Retorne um array vazio em caso de erro
     } finally {
       setIsLoading(false);
     }
