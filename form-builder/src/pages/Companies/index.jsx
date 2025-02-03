@@ -28,7 +28,7 @@ export default function Companies() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-gray-50">
+    <div className="max-w-6xl mx-auto bg-gray-50">
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Empresas</h1>
         <Link 

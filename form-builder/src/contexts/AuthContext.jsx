@@ -10,9 +10,9 @@ function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
     if (token) {
-      // Se existir token, considerar usuário como autenticado
-      setUser({ token });
+      setUser({ token, role }); // Inclui o role ao restaurar a sessão
     }
     setLoading(false);
   }, []);
@@ -21,8 +21,11 @@ function AuthProvider({ children }) {
     try {
       const response = await api.post('/auth/login', credentials);
       const { token, user: userData } = response.data;
+      
       localStorage.setItem('token', token);
-      setUser(userData);
+      localStorage.setItem('role', userData.role); // Salva o role
+      setUser(userData); // Salva todos os dados do usuário
+      
       return userData;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Erro ao fazer login');
@@ -31,6 +34,7 @@ function AuthProvider({ children }) {
 
   const signOut = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     setUser(null);
   };
 

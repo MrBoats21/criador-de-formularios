@@ -34,6 +34,9 @@ function FormProvider({ children }) {
       const response = await api.get(`/forms/${id}`);
       return response.data;
     } catch (err) {
+      if (err.response?.data?.alreadySubmitted) {
+        throw new Error(err.response.data.message);
+      }
       throw new Error(err.response?.data?.message || 'Erro ao carregar formulário');
     } finally {
       setIsLoading(false);

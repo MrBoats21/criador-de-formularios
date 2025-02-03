@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import { Layout } from './components/Layout/Layout';
+import { AdminLayout } from './components/Layout/AdminLayout'; // era Layout
 import { UserLayout } from './components/Layout/UserLayout';
 import { PrivateRoute } from './routes/PrivateRoute';
 import FormBuilder from './pages/FormBuilder';
@@ -12,6 +12,7 @@ import FormList from './pages/FormList';
 import UserForms from './pages/UserForms';
 import FormFill from './pages/FormFill';
 import UserSubmissions from './pages/UserSubmissions';
+import AdminSubmissions from './pages/AdminSubmissions';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider } from './contexts/CompanyContext';
 import { FormProvider } from './contexts/FormContext';
@@ -34,8 +35,8 @@ function App() {
               <Route
                 path="/admin"
                 element={
-                  <PrivateRoute role="admin"> {/* Verifica se o usuário é admin */}
-                    <Layout />
+                  <PrivateRoute role="admin">
+                    <AdminLayout />
                   </PrivateRoute>
                 }
               >
@@ -46,6 +47,7 @@ function App() {
                 <Route path="companies" element={<Companies />} />
                 <Route path="companies/create" element={<CreateCompany />} />
                 <Route path="companies/:id/edit" element={<EditCompany />} />
+                <Route path="submissions" element={<AdminSubmissions />} /> 
                 <Route index element={<Navigate to="dashboard" />} />
               </Route>
 
@@ -65,7 +67,7 @@ function App() {
               </Route>
 
               {/* Rota de Fallback (caso a rota não exista) */}
-              <Route path="*" element={<Navigate to="/user/my-forms" />} />
+              <Route path="*" element={<Navigate to={localStorage.getItem('role') === 'admin' ? '/admin/dashboard' : '/user/my-forms'} />} />
             </Routes>
           </SubmissionProvider>
         </CompanyProvider>

@@ -14,20 +14,55 @@ export default function FormFill() {
   const [answers, setAnswers] = useState({});
   const [toast, setToast] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
     loadForm();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  useEffect(() => {
+    if (form) {
+      validateForm();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers, form]);
+
+  const validateForm = () => {
+    if (!form?.fields) return false;
+    
+    for (const field of form.fields) {
+      if (field.validations?.required) {
+        const answer = answers[field.id];
+        if (!answer?.value) {
+          setIsValid(false);
+          return;
+        }
+      }
+    }
+    setIsValid(true);
+  };
+
   const loadForm = async () => {
     try {
       setIsLoading(true);
       const formData = await getForm(id);
       setForm(formData);
-    // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setToast({ message: 'Erro ao carregar formulário', type: 'error' });
+      if (error.response?.data?.alreadySubmitted) {
+        setToast({ 
+          message: 'Você já respondeu este formulário', 
+          type: 'warning' 
+        });
+        setTimeout(() => {
+          navigate('/user/my-forms');
+        }, 2000);
+      } else {
+        setToast({ 
+          message: 'Erro ao carregar formulário', 
+          type: 'error' 
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -36,7 +71,7 @@ export default function FormFill() {
   const validateAnswers = () => {
     const errors = [];
     form.fields.forEach(field => {
-      if (field.validations?.required && !answers[field.id]) {
+      if (field.validations?.required && !answers[field.id]?.value) {
         errors.push(`O campo "${field.label}" é obrigatório`);
       }
     });
@@ -57,7 +92,7 @@ export default function FormFill() {
       await submitForm(id, answers);
       setToast({ message: 'Formulário enviado com sucesso!', type: 'success' });
       setTimeout(() => {
-        navigate('/my-forms');
+        navigate('/user/my-forms');
       }, 2000);
     } catch (error) {
       setToast({ message: error.message || 'Erro ao enviar formulário', type: 'error' });
@@ -115,14 +150,19 @@ export default function FormFill() {
           <div className="mt-8">
             <button
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !isValid}
               className={`w-full py-3 rounded-lg transition-colors ${
-                isLoading 
+                isLoading || !isValid
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-blue-500 hover:bg-blue-600'
               } text-white`}
             >
-              {isLoading ? 'Enviando...' : 'Enviar Respostas'}
+              {isLoading 
+                ? 'Enviando...' 
+                : !isValid 
+                  ? 'Preencha todos os campos obrigatórios'
+                  : 'Enviar Respostas'
+              }
             </button>
           </div>
         </div>

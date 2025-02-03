@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from '../../contexts/FormContext';
 import { useCompany } from '../../contexts/CompanyContext';
-import { useAuth } from '../../contexts/AuthContext';
 import { Toast } from '../../components/Toast';
 import { SignatureField } from '../../components/FormBuilder/SignatureField';
 import { MaskedField } from '../../components/FormBuilder/MaskedField';
@@ -12,7 +11,6 @@ export default function FormSubmission() {
   const navigate = useNavigate();
   const { forms } = useForm();
   const { getCompany } = useCompany();
-  const { user } = useAuth();
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState(null);
@@ -100,12 +98,6 @@ export default function FormSubmission() {
 
     try {
       // Aqui virá integração com backend
-      console.log('Submissão:', {
-        formId: form.id,
-        userId: user.id,
-        answers: formData,
-        submittedAt: new Date()
-      });
 
       setToast({ message: 'Formulário enviado com sucesso!', type: 'success' });
       setTimeout(() => {

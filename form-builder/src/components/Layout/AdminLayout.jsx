@@ -20,7 +20,7 @@ export function AdminLayout() {
             Dashboard
           </Link>
           <Link 
-            to="/companies" 
+            to="/admin/companies" 
             className={`block py-2.5 px-4 rounded transition-colors ${isActive('/admin/companies')}`}
           >
             Empresas
@@ -32,15 +32,21 @@ export function AdminLayout() {
             Meus Formulários
           </Link>
           <Link 
-            to="/form-builder" 
-            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/form-builder')}`}
+            to="/admin/form-builder" 
+            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/admin/form-builder')}`}
           >
             Criar Formulário
+          </Link>
+          <Link 
+            to="/admin/submissions" 
+            className={`block py-2.5 px-4 rounded transition-colors ${isActive('/admin/submissions')}`}
+          >
+            Submissões
           </Link>
         </nav>
       </aside>
 
-      <main className="flex-1 overflow-y-auto bg-gray-50">
+      <main className="flex-1 overflow-y-auto bg-gray-50 pt-10">
         <Outlet />
       </main>
     </div>

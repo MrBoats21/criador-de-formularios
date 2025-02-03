@@ -106,7 +106,7 @@ export default function FormBuilder() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-gray-50">
+    <div className="max-w-6xl mx-auto bg-gray-50">
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <input

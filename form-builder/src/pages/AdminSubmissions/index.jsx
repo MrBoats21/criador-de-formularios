@@ -3,12 +3,12 @@ import { useSubmission } from '../../contexts/SubmissionContext';
 import { Toast } from '../../components/Toast';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-export default function UserSubmissions() {
+export default function AdminSubmissions() {
   const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [expandedSubmissions, setExpandedSubmissions] = useState({});
-  const { getSubmissions } = useSubmission();
+  const { getAllSubmissions } = useSubmission();
 
   useEffect(() => {
     loadSubmissions();
@@ -18,11 +18,11 @@ export default function UserSubmissions() {
   const loadSubmissions = async () => {
     try {
       setIsLoading(true);
-      const response = await getSubmissions();
+      const response = await getAllSubmissions();
       setSubmissions(response || []);
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setToast({ message: 'Erro ao carregar respostas', type: 'error' });
+      setToast({ message: 'Erro ao carregar submissões', type: 'error' });
       setSubmissions([]);
     } finally {
       setIsLoading(false);
@@ -42,11 +42,11 @@ export default function UserSubmissions() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Minhas Respostas</h1>
+      <h1 className="text-2xl font-bold mb-6">Todas as Submissões</h1>
 
       {submissions.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-          Você ainda não respondeu nenhum formulário.
+          Nenhuma submissão encontrada.
         </div>
       ) : (
         <div className="space-y-4">
@@ -60,6 +60,9 @@ export default function UserSubmissions() {
                   <h2 className="text-xl font-semibold">
                     Formulário: {submission.formTitle}
                   </h2>
+                  <p className="text-gray-500">
+                    Respondido por: {submission.userName}
+                  </p>
                   <p className="text-gray-500 text-sm">
                     Enviado em: {new Date(submission.submittedAt).toLocaleDateString()}
                   </p>

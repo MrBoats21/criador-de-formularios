@@ -18,7 +18,6 @@ export default function FormList() {
   const loadForms = async () => {
     try {
       const response = await getForms();
-      console.log('Dados recebidos:', response); // Verifique a estrutura dos dados
       setForms(Array.isArray(response) ? response : []); // Garante que `forms` seja um array
     } catch (error) {
       setToast({ message: 'Erro ao carregar formulários', type: 'error' });

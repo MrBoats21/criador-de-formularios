@@ -3,8 +3,14 @@ import { MaskedField } from '../FormBuilder/MaskedField';
 import { SignatureField } from '../FormBuilder/SignatureField';
 
 export function FormRenderer({ fields, theme, values, onChange }) {
-  const handleFieldChange = (fieldId, value) => {
-    onChange({ ...values, [fieldId]: value });
+  const handleFieldChange = (fieldId, value, fieldLabel) => {
+    onChange({
+      ...values,
+      [fieldId]: {
+        label: fieldLabel,
+        value: value
+      }
+    });
   };
 
   const renderField = (field) => {
@@ -16,8 +22,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
           <input
             type="text"
             className={baseInputClass}
-            value={values[field.id] || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            value={values[field.id]?.value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
             required={field.validations?.required}
             minLength={field.validations?.minLength}
             maxLength={field.validations?.maxLength}
@@ -28,8 +34,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
         return (
           <textarea
             className={baseInputClass}
-            value={values[field.id] || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            value={values[field.id]?.value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
             required={field.validations?.required}
             rows={field.validations?.rows || 3}
           />
@@ -40,8 +46,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
           <input
             type="number"
             className={baseInputClass}
-            value={values[field.id] || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            value={values[field.id]?.value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
             required={field.validations?.required}
             min={field.validations?.min}
             max={field.validations?.max}
@@ -53,8 +59,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
         return (
           <select
             className={baseInputClass}
-            value={values[field.id] || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            value={values[field.id]?.value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
             required={field.validations?.required}
           >
             <option value="">Selecione...</option>
@@ -73,8 +79,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
                   type="radio"
                   name={field.id}
                   value={option}
-                  checked={(values[field.id] || '') === option}
-                  onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                  checked={(values[field.id]?.value || '') === option}
+                  onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
                   required={field.validations?.required}
                   className="mr-2"
                 />
@@ -89,8 +95,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={values[field.id] || false}
-              onChange={(e) => handleFieldChange(field.id, e.target.checked)}
+              checked={values[field.id]?.value || false}
+              onChange={(e) => handleFieldChange(field.id, e.target.checked, field.label)}
               required={field.validations?.required}
               className="mr-2"
             />
@@ -103,8 +109,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
           <input
             type="date"
             className={baseInputClass}
-            value={values[field.id] || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            value={values[field.id]?.value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
             required={field.validations?.required}
             min={field.validations?.minDate}
             max={field.validations?.maxDate}
@@ -116,7 +122,7 @@ export function FormRenderer({ fields, theme, values, onChange }) {
           <input
             type="file"
             className={baseInputClass}
-            onChange={(e) => handleFieldChange(field.id, e.target.files[0])}
+            onChange={(e) => handleFieldChange(field.id, e.target.files[0], field.label)}
             required={field.validations?.required}
             accept={field.validations?.allowedTypes}
           />
@@ -125,7 +131,7 @@ export function FormRenderer({ fields, theme, values, onChange }) {
       case 'signature':
         return (
           <SignatureField
-            onChange={(signatureData) => handleFieldChange(field.id, signatureData)}
+            onChange={(signatureData) => handleFieldChange(field.id, signatureData, field.label)}
             width={field.validations?.width || 400}
             height={field.validations?.height || 200}
             required={field.validations?.required}
@@ -139,8 +145,8 @@ export function FormRenderer({ fields, theme, values, onChange }) {
         return (
           <MaskedField
             type={field.type}
-            value={values[field.id] || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            value={values[field.id]?.value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
             className={baseInputClass}
             required={field.validations?.required}
           />
