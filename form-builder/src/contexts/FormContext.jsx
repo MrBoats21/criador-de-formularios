@@ -43,6 +43,20 @@ function FormProvider({ children }) {
     }
   };
 
+  const getFormsWithStatus = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('/forms/with-status');
+      setForms(response.data);
+      return response.data;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao carregar formulários');
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const createForm = async (formData) => {
     try {
       setIsLoading(true);
@@ -94,7 +108,9 @@ function FormProvider({ children }) {
       getForm,
       createForm,
       updateForm,
-      deleteForm
+      deleteForm,
+      getFormsWithStatus
+
     }}>
       {children}
     </FormContext.Provider>

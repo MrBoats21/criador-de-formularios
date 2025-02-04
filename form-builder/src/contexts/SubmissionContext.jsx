@@ -62,6 +62,17 @@ function SubmissionProvider({ children }) {
    }
  };
 
+ const deleteSubmission = async (id) => {
+    try {
+      setIsLoading(true);
+      await api.delete(`/submissions/${id}`);
+    } catch (err) {
+      throw new Error(err.response?.data?.message || 'Erro ao deletar submissão');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
  return (
    <SubmissionContext.Provider value={{
      submissions,
@@ -70,7 +81,8 @@ function SubmissionProvider({ children }) {
      submitForm,
      getSubmissions,
      getFormSubmissions,
-     getAllSubmissions
+     getAllSubmissions,
+     deleteSubmission
    }}>
      {children}
    </SubmissionContext.Provider>

@@ -3,7 +3,10 @@ const router = express.Router();
 const formController = require('../controllers/formController');
 const { authenticate, isAdmin } = require('../middlewares/auth');
 
-// Adicione a rota GET específica antes da rota genérica
+// Primeiro as rotas específicas
+router.get('/with-status', authenticate, formController.getFormsWithSubmissionStatus);
+
+// Depois as rotas com parâmetros
 router.get('/:id', authenticate, formController.getForm);
 router.get('/', authenticate, formController.getForms);
 router.post('/', authenticate, isAdmin, formController.createForm);

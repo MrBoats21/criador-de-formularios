@@ -59,7 +59,7 @@ export default function FormFill() {
         }, 2000);
       } else {
         setToast({ 
-          message: 'Erro ao carregar formulário', 
+          message: error.message || 'Erro ao carregar formulário', 
           type: 'error' 
         });
       }

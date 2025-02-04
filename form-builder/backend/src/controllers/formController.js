@@ -40,16 +40,31 @@ const formController = {
   getForm: async (req, res) => {
     try {
       const { id } = req.params;
+      const userId = req.user.id;
+   
+      // Verifica se usuário já respondeu
+      const [submissions] = await pool.execute(
+        'SELECT id FROM form_submissions WHERE formId = ? AND userId = ?',
+        [id, userId]
+      );
+   
+      if (submissions.length > 0) {
+        return res.status(403).json({ 
+          message: 'Você já respondeu este formulário.',
+          alreadySubmitted: true 
+        });
+      }
+   
       const [forms] = await pool.execute('SELECT * FROM forms WHERE id = ?', [id]);
       
       if (forms.length === 0) {
         return res.status(404).json({ message: 'Formulário não encontrado' });
       }
-
+   
       const form = forms[0];
       let parsedFields = [];
       let parsedTheme = null;
-
+   
       try {
         parsedFields = typeof form.fields === 'string' 
           ? JSON.parse(form.fields) 
@@ -57,7 +72,7 @@ const formController = {
       } catch (error) {
         console.error('Error parsing fields:', error);
       }
-
+   
       try {
         parsedTheme = typeof form.theme === 'string' 
           ? JSON.parse(form.theme) 
@@ -65,7 +80,7 @@ const formController = {
       } catch (error) {
         console.error('Error parsing theme:', error);
       }
-
+   
       res.json({
         ...form,
         fields: parsedFields,
@@ -73,6 +88,51 @@ const formController = {
       });
     } catch (error) {
       console.error('Error getting form:', error);
+      res.status(500).json({ message: error.message });
+    }
+   },
+
+   getFormsWithSubmissionStatus: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const [forms] = await pool.execute(`
+        SELECT f.*, 
+          CASE WHEN fs.id IS NOT NULL THEN TRUE ELSE FALSE END as isSubmitted 
+        FROM forms f 
+        LEFT JOIN form_submissions fs ON f.id = fs.formId AND fs.userId = ?
+        ORDER BY f.id DESC`,
+        [userId]
+      );
+  
+      const formattedForms = forms.map(form => {
+        let parsedFields = [];
+        let parsedTheme = null;
+  
+        try {
+          parsedFields = typeof form.fields === 'string' 
+            ? JSON.parse(form.fields) 
+            : form.fields || [];
+        } catch (error) {
+          console.error('Error parsing fields:', error);
+        }
+  
+        try {
+          parsedTheme = typeof form.theme === 'string' 
+            ? JSON.parse(form.theme) 
+            : form.theme;
+        } catch (error) {
+          console.error('Error parsing theme:', error);
+        }
+  
+        return {
+          ...form,
+          fields: parsedFields,
+          theme: parsedTheme
+        };
+      });
+  
+      res.json(formattedForms);
+    } catch (error) {
       res.status(500).json({ message: error.message });
     }
   },

@@ -1,14 +1,15 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import { useSubmission } from '../../contexts/SubmissionContext';
 import { Toast } from '../../components/Toast';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash } from 'lucide-react';
 
 export default function AdminSubmissions() {
   const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [expandedSubmissions, setExpandedSubmissions] = useState({});
-  const { getAllSubmissions } = useSubmission();
+  const { getAllSubmissions, deleteSubmission } = useSubmission();
 
   useEffect(() => {
     loadSubmissions();
@@ -20,7 +21,6 @@ export default function AdminSubmissions() {
       setIsLoading(true);
       const response = await getAllSubmissions();
       setSubmissions(response || []);
-    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setToast({ message: 'Erro ao carregar submissões', type: 'error' });
       setSubmissions([]);
@@ -29,6 +29,19 @@ export default function AdminSubmissions() {
     }
   };
 
+  const handleDelete = async (id, event) => {
+    event.stopPropagation(); // Evita que o clique propague para o toggleSubmission
+    
+    if (window.confirm('Tem certeza que deseja excluir esta submissão?')) {
+      try {
+        await deleteSubmission(id);
+        setSubmissions(submissions.filter(sub => sub.id !== id));
+        setToast({ message: 'Submissão deletada com sucesso', type: 'success' });
+      } catch (error) {
+        setToast({ message: 'Erro ao deletar submissão', type: 'error' });
+      }
+    }
+  };
   const toggleSubmission = (submissionId) => {
     setExpandedSubmissions(prev => ({
       ...prev,
@@ -67,16 +80,25 @@ export default function AdminSubmissions() {
                     Enviado em: {new Date(submission.submittedAt).toLocaleDateString()}
                   </p>
                 </div>
-                <button 
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label={expandedSubmissions[submission.id] ? "Recolher" : "Expandir"}
-                >
-                  {expandedSubmissions[submission.id] ? (
-                    <ChevronUp className="w-6 h-6 text-gray-600" />
-                  ) : (
-                    <ChevronDown className="w-6 h-6 text-gray-600" />
-                  )}
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={(e) => handleDelete(submission.id, e)}
+                    className="p-2 hover:bg-red-100 rounded-full transition-colors text-red-600"
+                    aria-label="Deletar submissão"
+                  >
+                    <Trash className="w-5 h-5" />
+                  </button>
+                  <button 
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label={expandedSubmissions[submission.id] ? "Recolher" : "Expandir"}
+                  >
+                    {expandedSubmissions[submission.id] ? (
+                      <ChevronUp className="w-6 h-6 text-gray-600" />
+                    ) : (
+                      <ChevronDown className="w-6 h-6 text-gray-600" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {expandedSubmissions[submission.id] && (

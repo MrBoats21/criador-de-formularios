@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Toast } from '../components/Toast';
+import { useEffect } from 'react';
 
 export default function Login() {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -9,15 +10,23 @@ export default function Login() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (token && role) {
+      navigate(role === 'admin' ? '/admin/dashboard' : '/user/my-forms');
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const user = await signIn(credentials);
       // Redirecionar baseado no role
       if (user.role === 'admin') {
-        navigate('/dashboard');
+        navigate('/admin/dashboard'); // Adiciona / no início
       } else {
-        navigate('/my-forms'); // Ou qualquer outra rota para usuários comuns
+        navigate('/user/my-forms'); // Adiciona / no início
       }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {

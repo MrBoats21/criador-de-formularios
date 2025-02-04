@@ -78,6 +78,16 @@ const submissionController = {
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
+  },
+
+  deleteSubmission: async (req, res) => {
+    try {
+      const { id } = req.params;
+      await pool.execute('DELETE FROM form_submissions WHERE id = ?', [id]);
+      res.json({ message: 'Submissão deletada com sucesso' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
 };
 
