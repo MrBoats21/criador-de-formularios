@@ -6,10 +6,12 @@ import { useCompany } from '../../contexts/CompanyContext';
 
 export default function EditCompany() {
   const { id } = useParams();
+  console.log('EditCompany - ID:', id); // Log do ID
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
   const { getCompany, updateCompany } = useCompany();
   const company = getCompany(Number(id));
+  console.log('EditCompany - Company:', company);
 
   const handleSubmit = async (data) => {
     try {

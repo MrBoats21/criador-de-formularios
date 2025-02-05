@@ -43,10 +43,16 @@ const submissionController = {
   getAllSubmissions: async (req, res) => {
     try {
       const [submissions] = await pool.execute(
-        `SELECT fs.*, f.title as formTitle, u.name as userName 
+        `SELECT 
+          fs.*,
+          f.title as formTitle,
+          f.companyId,
+          u.name as userName,
+          c.name as companyName
          FROM form_submissions fs
          JOIN forms f ON fs.formId = f.id
          JOIN users u ON fs.userId = u.id
+         JOIN companies c ON f.companyId = c.id
          ORDER BY fs.submittedAt DESC`
       );
   
@@ -54,7 +60,9 @@ const submissionController = {
         ...submission,
         answers: typeof submission.answers === 'string' 
           ? JSON.parse(submission.answers)
-          : submission.answers
+          : submission.answers,
+        submittedAt: new Date(submission.submittedAt).toISOString(),
+        status: submission.status || 'pending' // Garante que sempre teremos um status
       }));
   
       res.json(parsedSubmissions);

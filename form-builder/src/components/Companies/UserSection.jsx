@@ -1,15 +1,35 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { createUser } from '../../services/userService';
+import { Toast } from '../../components/Toast';
 
 export function UserSection({ users = [], onAddUser, onRemoveUser }) {
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '' });
   const [showAddForm, setShowAddForm] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAddUser({ ...newUser, role: 'user' });
-    setNewUser({ name: '', email: '', password: '' });
-    setShowAddForm(false);
+    setIsLoading(true);
+    try {
+      const userData = { ...newUser, role: 'user' };
+      const createdUser = await createUser(userData);
+      onAddUser(createdUser);
+      setNewUser({ name: '', email: '', password: '' });
+      setShowAddForm(false);
+      setToast({ 
+        type: 'success', 
+        message: 'Usuário criado com sucesso. Um email foi enviado com as credenciais.' 
+      });
+    } catch (error) {
+      setToast({ 
+        type: 'error', 
+        message: error.response?.data?.message || 'Erro ao criar usuário' 
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -83,19 +103,29 @@ export function UserSection({ users = [], onAddUser, onRemoveUser }) {
                   type="button"
                   onClick={() => setShowAddForm(false)}
                   className="px-4 py-2 border rounded"
+                  disabled={isLoading}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                  className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-blue-300"
+                  disabled={isLoading}
                 >
-                  Adicionar
+                  {isLoading ? 'Criando...' : 'Adicionar'}
                 </button>
               </div>
             </form>
           </div>
         </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

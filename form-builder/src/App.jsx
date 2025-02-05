@@ -40,14 +40,14 @@ function App() {
                   </PrivateRoute>
                 }
               >
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="forms" element={<FormList />} />
-                <Route path="form-builder" element={<FormBuilder />} />
-                <Route path="form-builder/:id" element={<FormBuilder />} />
-                <Route path="companies" element={<Companies />} />
                 <Route path="companies/create" element={<CreateCompany />} />
                 <Route path="companies/:id/edit" element={<EditCompany />} />
-                <Route path="submissions" element={<AdminSubmissions />} /> 
+                <Route path="companies" element={<Companies />} />
+                <Route path="form-builder/:id" element={<FormBuilder />} />
+                <Route path="form-builder" element={<FormBuilder />} />
+                <Route path="forms" element={<FormList />} />
+                <Route path="submissions" element={<AdminSubmissions />} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route index element={<Navigate to="dashboard" />} />
               </Route>
 
