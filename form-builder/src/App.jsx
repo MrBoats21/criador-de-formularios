@@ -1,9 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import { AdminLayout } from './components/Layout/AdminLayout'; // era Layout
-import { UserLayout } from './components/Layout/UserLayout';
-import { PrivateRoute } from './routes/PrivateRoute';
 import FormBuilder from './pages/FormBuilder';
 import Companies from './pages/Companies';
 import CreateCompany from './pages/Companies/CreateCompany';
@@ -13,6 +10,11 @@ import UserForms from './pages/UserForms';
 import FormFill from './pages/FormFill';
 import UserSubmissions from './pages/UserSubmissions';
 import AdminSubmissions from './pages/AdminSubmissions';
+import RequestReset from './pages/ResetPassword';
+import NewPassword from './pages/NewPassword';
+import { AdminLayout } from './components/Layout/AdminLayout'; // era Layout
+import { UserLayout } from './components/Layout/UserLayout';
+import { PrivateRoute } from './routes/PrivateRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider } from './contexts/CompanyContext';
 import { FormProvider } from './contexts/FormContext';
@@ -27,6 +29,8 @@ function App() {
             <Routes>
               {/* Rota de Login */}
               <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<RequestReset />} />
+              <Route path="/reset-password/:token" element={<NewPassword />} />
 
               {/* Redirecionamento padrão */}
               <Route path="/" element={<Navigate to="/login" />} />

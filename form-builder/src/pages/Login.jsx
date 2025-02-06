@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Toast } from '../components/Toast';
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Login() {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -70,6 +71,12 @@ export default function Login() {
               })}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div className="mt-4 text-center">
+            <Link to="/reset-password" className="text-blue-600 hover:text-blue-800">
+              Esqueceu sua senha?
+            </Link>
           </div>
 
           <button

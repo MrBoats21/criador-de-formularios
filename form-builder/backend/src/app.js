@@ -4,6 +4,7 @@ const companiesRoutes = require('./routes/companies');
 const formsRoutes = require('./routes/forms');
 const authRoutes = require('./routes/auth');
 const submissionsRoutes = require('./routes/submissions');
+const userRoutes = require('./routes/users'); // Nova importação
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use('/api/companies', companiesRoutes);
 app.use('/api/forms', formsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/submissions', submissionsRoutes);
+app.use('/api/users', userRoutes); // Nova rota
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
