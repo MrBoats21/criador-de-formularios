@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Users, Trash2 } from 'lucide-react';
 import PropTypes from 'prop-types';
@@ -9,8 +10,9 @@ export function UserModal({ company, onClose }) {
  const [newUser, setNewUser] = useState({ name: '', email: '', password: '' });
  const [toast, setToast] = useState(null);
  const [isLoading, setIsLoading] = useState(false);
- const [isListOpen, setIsListOpen] = useState(false);
+ const [isListOpen, setIsListOpen] = useState(true);
  const { updateCompany } = useCompany();
+ const [users, setUsers] = useState(company.users || []);
 
  const handleSubmit = async (e) => {
    e.preventDefault();
@@ -23,19 +25,10 @@ export function UserModal({ company, onClose }) {
      };
      
      const response = await api.post('/users', userData);
-     console.log('Resposta da API:', response.data);
-
-     // Atualiza a lista de usuários
-     const updatedCompany = {
-       ...company,
-       users: [...(company.users || []), response.data]
-     };
-     
-     await updateCompany(company.id, updatedCompany);
+     setUsers([...users, response.data]);
      setNewUser({ name: '', email: '', password: '' });
      setToast({ message: 'Usuário adicionado com sucesso', type: 'success' });
    } catch (error) {
-     console.error('Erro:', error);
      setToast({ message: error.response?.data?.message || 'Erro ao adicionar usuário', type: 'error' });
    } finally {
      setIsLoading(false);
@@ -46,13 +39,8 @@ export function UserModal({ company, onClose }) {
    if (window.confirm('Tem certeza que deseja remover este usuário?')) {
      try {
        await api.delete(`/users/${user.id}/company/${company.id}`);
-       const updatedCompany = {
-         ...company,
-         users: company.users.filter(u => u.id !== user.id)
-       };
-       await updateCompany(company.id, updatedCompany);
+       setUsers(users.filter(u => u.id !== user.id));
        setToast({ message: 'Usuário removido com sucesso', type: 'success' });
-     // eslint-disable-next-line no-unused-vars
      } catch (error) {
        setToast({ message: 'Erro ao remover usuário', type: 'error' });
      }
@@ -72,7 +60,6 @@ export function UserModal({ company, onClose }) {
          </button>
        </div>
 
-       {/* Lista de usuários em dropdown */}
        <div className="mb-6">
          <button 
            onClick={() => setIsListOpen(!isListOpen)}
@@ -81,7 +68,7 @@ export function UserModal({ company, onClose }) {
            <div className="flex items-center gap-2">
              <Users size={20} />
              <span className="font-medium">
-               Usuários Cadastrados ({(company.users || []).length})
+               Usuários Cadastrados ({users.length})
              </span>
            </div>
            {isListOpen ? <ChevronUp /> : <ChevronDown />}
@@ -89,13 +76,13 @@ export function UserModal({ company, onClose }) {
          
          {isListOpen && (
            <div className="mt-2 border rounded-lg">
-             {(company.users || []).length === 0 ? (
+             {users.length === 0 ? (
                <div className="p-4 text-center text-gray-500">
                  Nenhum usuário cadastrado
                </div>
              ) : (
                <div className="divide-y">
-                 {(company.users || []).map((user, index) => (
+                 {users.map((user, index) => (
                    <div key={index} className="p-4 flex justify-between items-center">
                      <div>
                        <p className="font-medium">{user.name}</p>
@@ -116,7 +103,6 @@ export function UserModal({ company, onClose }) {
          )}
        </div>
 
-       {/* Formulário de novo usuário */}
        <form onSubmit={handleSubmit} className="space-y-4">
          <h3 className="font-medium">Adicionar Novo Usuário</h3>
          <div>
