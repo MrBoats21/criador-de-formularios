@@ -19,19 +19,48 @@ const submissionController = {
     try {
       const userId = req.user.id;
       const [submissions] = await pool.execute(
-        `SELECT fs.id, fs.formId, fs.answers, fs.submittedAt, fs.status, f.title as formTitle 
+        `SELECT fs.id, fs.formId, fs.answers, fs.submittedAt, fs.status, f.title as formTitle,
+                f.fields as formFields 
          FROM form_submissions fs
          JOIN forms f ON fs.formId = f.id
          WHERE fs.userId = ?`,
         [userId]
       );
   
-      const parsedSubmissions = submissions.map(submission => ({
-        ...submission,
-        answers: typeof submission.answers === 'string' 
-          ? JSON.parse(submission.answers)
-          : submission.answers
-      }));
+      const parsedSubmissions = submissions.map(submission => {
+        let formFields = [];
+        let answers = {};
+        
+        try {
+          formFields = typeof submission.formFields === 'string' 
+            ? JSON.parse(submission.formFields)
+            : submission.formFields || [];
+            
+          answers = typeof submission.answers === 'string'
+            ? JSON.parse(submission.answers)
+            : submission.answers || {};
+        } catch (e) {
+          console.error('Error parsing JSON:', e);
+        }
+  
+        // Adiciona o tipo do campo em cada resposta
+        const answersWithType = Object.entries(answers).reduce((acc, [key, answer]) => {
+          const field = formFields.find(f => f.id === key);
+          return {
+            ...acc,
+            [key]: {
+              ...answer,
+              type: field?.type || 'text'
+            }
+          };
+        }, {});
+  
+        return {
+          ...submission,
+          formFields: undefined, // Remove do resultado final
+          answers: answersWithType
+        };
+      });
   
       res.json(parsedSubmissions);
     } catch (error) {
@@ -46,6 +75,7 @@ const submissionController = {
         `SELECT 
           fs.*,
           f.title as formTitle,
+          f.fields as formFields,
           f.companyId,
           u.name as userName,
           c.name as companyName
@@ -56,14 +86,42 @@ const submissionController = {
          ORDER BY fs.submittedAt DESC`
       );
   
-      const parsedSubmissions = submissions.map(submission => ({
-        ...submission,
-        answers: typeof submission.answers === 'string' 
-          ? JSON.parse(submission.answers)
-          : submission.answers,
-        submittedAt: new Date(submission.submittedAt).toISOString(),
-        status: submission.status || 'pending' // Garante que sempre teremos um status
-      }));
+      const parsedSubmissions = submissions.map(submission => {
+        let formFields = [];
+        let answers = {};
+        
+        try {
+          formFields = typeof submission.formFields === 'string' 
+            ? JSON.parse(submission.formFields)
+            : submission.formFields || [];
+            
+          answers = typeof submission.answers === 'string'
+            ? JSON.parse(submission.answers)
+            : submission.answers || {};
+        } catch (e) {
+          console.error('Error parsing JSON:', e);
+        }
+  
+        // Adiciona o tipo do campo em cada resposta
+        const answersWithType = Object.entries(answers).reduce((acc, [key, answer]) => {
+          const field = formFields.find(f => f.id === key);
+          return {
+            ...acc,
+            [key]: {
+              ...answer,
+              type: field?.type || 'text'
+            }
+          };
+        }, {});
+  
+        return {
+          ...submission,
+          formFields: undefined,
+          answers: answersWithType,
+          submittedAt: new Date(submission.submittedAt).toISOString(),
+          status: submission.status || 'pending'
+        };
+      });
   
       res.json(parsedSubmissions);
     } catch (error) {

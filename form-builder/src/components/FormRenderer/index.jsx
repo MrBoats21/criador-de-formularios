@@ -55,6 +55,46 @@ export function FormRenderer({ fields, theme, values, onChange }) {
           />
         );
 
+        case 'email':
+          return (
+            <input
+              type="email"
+              className={baseInputClass}
+              value={values[field.id]?.value || ''}
+              onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
+              required={field.validations?.required}
+            />
+          );
+        
+        case 'time':
+          return (
+            <input
+              type="time"
+              className={baseInputClass}
+              value={values[field.id]?.value || ''}
+              onChange={(e) => handleFieldChange(field.id, e.target.value, field.label)}
+              required={field.validations?.required}
+            />
+          );
+        
+        case 'multiSelect':
+          return (
+            <select
+              multiple
+              className={baseInputClass}
+              value={values[field.id]?.value || []}
+              onChange={(e) => {
+                const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                handleFieldChange(field.id, selectedOptions, field.label);
+              }}
+              required={field.validations?.required}
+            >
+              {field.validations?.options?.map((option, index) => (
+                <option key={index} value={option}>{option}</option>
+              ))}
+            </select>
+          );
+
       case 'select':
         return (
           <select
@@ -117,16 +157,30 @@ export function FormRenderer({ fields, theme, values, onChange }) {
           />
         );
 
-      case 'file':
-        return (
-          <input
-            type="file"
-            className={baseInputClass}
-            onChange={(e) => handleFieldChange(field.id, e.target.files[0], field.label)}
-            required={field.validations?.required}
-            accept={field.validations?.allowedTypes}
-          />
-        );
+        case 'file':
+          return (
+            <input
+              type="file"
+              className={baseInputClass}
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    handleFieldChange(field.id, {
+                      name: file.name,
+                      type: file.type,
+                      size: file.size,
+                      data: event.target.result
+                    }, field.label);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              required={field.validations?.required}
+              accept={field.validations?.allowedTypes}
+            />
+          );
 
       case 'signature':
         return (

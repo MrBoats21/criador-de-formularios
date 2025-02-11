@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useSubmission } from '../../contexts/SubmissionContext';
 import { Toast } from '../../components/Toast';
-import { ChevronDown, ChevronUp, Trash } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash, Download } from 'lucide-react';
 
 export default function AdminSubmissions() {
   const [submissions, setSubmissions] = useState([]);
@@ -29,8 +29,55 @@ export default function AdminSubmissions() {
     }
   };
 
+  const renderAnswerValue = (answer, type) => {
+    if (!answer || answer.value === undefined || answer.value === null) return '-';
+  
+    // Para múltipla escolha
+    if (type === 'multiple' || type === 'multiplechoice') {
+      if (Array.isArray(answer.value)) {
+        return answer.value.join(', ');
+      }
+    }
+  
+    // Para checkbox
+    if (type === 'checkbox') {
+      return answer.value ? 'Sim' : 'Não';
+    }
+  
+    // Para assinatura
+    if (type === 'signature') {
+      return (
+        <img 
+          src={answer.value} 
+          alt="Assinatura" 
+          className="max-w-[200px] max-h-[100px] object-contain"
+        />
+      );
+    }
+  
+    // Para arquivo
+    // Para arquivo
+    if (type === 'file' && answer.value) {
+      return (
+        <a 
+          href={answer.value.data}
+          download={answer.value.name}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm gap-2"
+        >
+          <Download size={16} />
+          Baixar {answer.value.name}
+        </a>
+      );
+    }
+  
+    // Para outros tipos
+    const text = answer.value.toString();
+    return text.length > 100 ? `${text.substring(0, 100)}...` : text;
+  };
+
   const handleDelete = async (id, event) => {
-    event.stopPropagation(); // Evita que o clique propague para o toggleSubmission
+    event.stopPropagation();
     
     if (window.confirm('Tem certeza que deseja excluir esta submissão?')) {
       try {
@@ -42,6 +89,7 @@ export default function AdminSubmissions() {
       }
     }
   };
+
   const toggleSubmission = (submissionId) => {
     setExpandedSubmissions(prev => ({
       ...prev,
@@ -105,12 +153,10 @@ export default function AdminSubmissions() {
                 <div className="px-6 pb-6 border-t pt-4">
                   <div className="space-y-3">
                     {Object.entries(submission.answers).map(([key, answer]) => (
-                      <div key={key} className="py-2 border-b border-gray-100 last:border-0">
+                      <div key={key} className="py-2 border-b border-gray-100 last:border-0 break-words">
                         <span className="font-medium">{answer.label}:</span>{' '}
-                        <span className="text-gray-700">
-                          {typeof answer.value === 'object' 
-                            ? 'Arquivo/Imagem' 
-                            : answer.value.toString()}
+                        <span className="text-gray-700 inline-block">
+                          {renderAnswerValue(answer, answer.type)}
                         </span>
                       </div>
                     ))}

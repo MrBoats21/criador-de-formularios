@@ -45,7 +45,7 @@ export default function FormList() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Meus Formulários</h1>
         <Link 
-          to="/form-builder"
+          to="/admin/form-builder"
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
         >
           Novo Formulário
@@ -66,7 +66,7 @@ export default function FormList() {
               </p>
               <div className="flex gap-2">
                 <Link
-                  to={`/form-builder/${form.id}`}
+                  to={`/admin/form-builder/${form.id}`}
                   className="text-blue-500 hover:text-blue-700"
                 >
                   Editar
